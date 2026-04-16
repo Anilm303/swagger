@@ -6,9 +6,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-swagger-demo-key-change-in-production')
 JWT_SECRET = os.environ.get('JWT_SECRET', SECRET_KEY)
-DEBUG=True
+DEBUG=False
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["*.vercel.app"]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
