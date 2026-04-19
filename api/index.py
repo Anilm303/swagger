@@ -1,23 +1,22 @@
 import os
 import sys
 
-# Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 
-import django
-django.setup()
-
-# Run migrations automatically (IMPORTANT for Vercel)
-from django.core.management import call_command
-
 try:
+    import django
+    django.setup()
+
+    from django.core.management import call_command
     call_command("migrate", verbosity=0, interactive=False)
+
+    from django.core.wsgi import get_wsgi_application
+    app = get_wsgi_application()
+
 except Exception as e:
-    print("Migration error:", e)
-
-# Start Django app
-from django.core.wsgi import get_wsgi_application
-
-app = get_wsgi_application()
+    def app(environ, start_response):
+        start_response("500 Internal Server Error", [("Content-Type", "text/plain")])
+        return [str(e).encode()]

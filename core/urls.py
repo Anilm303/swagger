@@ -1,57 +1,38 @@
 from django.contrib import admin
-from django.urls import path, include
-from django.views.generic import RedirectView
+from django.urls import path, re_path
+from django.http import JsonResponse, HttpResponse
+
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+# Home route (prevents 500 on "/")
+def home(request):
+    return JsonResponse({
+        "message": "Django API Running 🚀",
+        "swagger": "/swagger/",
+        "redoc": "/redoc/"
+    })
+
+# Favicon fix
+def favicon(request):
+    return HttpResponse(status=204)
+
 schema_view = get_schema_view(
     openapi.Info(
-        title="🔐 Django Auth API",
-        default_version="v1",
-        description="""
-## Django REST Framework — JWT Authentication API
-
-A complete authentication system built with Django + DRF, with interactive Swagger docs.
-
----
-
-### 🚀 Quick Start
-
-**Step 1 — Register** a new account using `POST /api/auth/register/`
-
-**Step 2 — Login** via `POST /api/auth/login/` — copy the `token` from the response
-
-**Step 3 — Authorize** — click the 🔒 **Authorize** button above and enter:
-```
-Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-**Step 4 — Use protected endpoints** like `GET /api/auth/profile/`
-
----
-
-### 🔑 Token Info
-- Format: `Authorization: Bearer <token>`
-- Algorithm: HS256
-- Expiry: 24 hours
-        """,
-        contact=openapi.Contact(email="admin@example.com"),
-        license=openapi.License(name="MIT"),
+        title="API",
+        default_version='v1',
     ),
     public=True,
     permission_classes=[permissions.AllowAny],
 )
 
 urlpatterns = [
-    # Redirect root → Swagger
-    path("", RedirectView.as_view(url="/swagger/", permanent=False)),
+    path("", home),
+    path("favicon.ico", favicon),
 
     path("admin/", admin.site.urls),
-    path("api/auth/", include("auth_app.urls")),
 
-    # Swagger UI
-    path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="swagger-ui"),
-    path("redoc/",   schema_view.with_ui("redoc",   cache_timeout=0), name="redoc-ui"),
-    path("swagger.json", schema_view.without_ui(cache_timeout=0),     name="swagger-json"),
+    re_path(r"^swagger/$", schema_view.with_ui("swagger", cache_timeout=0)),
+    re_path(r"^redoc/$", schema_view.with_ui("redoc", cache_timeout=0)),
 ]
